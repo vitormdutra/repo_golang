@@ -71,7 +71,11 @@ func EditaAluno(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"errr": err.Error()})
 		return
 	}
-
+	if err := models.ValidaDadosDeAluno(&aluno); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error()})
+		return
+	}
 	database.DB.Model(&aluno).UpdateColumns(aluno)
 	ctx.JSON(http.StatusOK, aluno)
 }
@@ -91,6 +95,23 @@ func CriaNovoAluno(ctx *gin.Context) {
 			"error": err.Error()})
 		return
 	}
+	if err := models.ValidaDadosDeAluno(&aluno); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error()})
+		return
+	}
 	database.DB.Create(&aluno)
 	ctx.JSON(http.StatusOK, aluno)
+}
+
+func ExibiPaginaIndex(ctx *gin.Context) {
+	var alunos []models.Aluno
+	database.DB.Find(&alunos)
+	ctx.HTML(http.StatusOK, "index.html", gin.H{
+		"alunos": alunos,
+	})
+}
+
+func RotaNaoEncontrada(ctx *gin.Context) {
+	ctx.HTML(http.StatusNotFound, "404.html", nil)
 }
